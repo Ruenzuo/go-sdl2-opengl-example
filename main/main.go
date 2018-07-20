@@ -39,12 +39,34 @@ func main() {
 		pixels[i] = 255
 	}
 	running := true
+	leftButtonPressed := false
 	for running {
 		// the number of bytes in a row of pixel data
 		pitch := width * int32(unsafe.Sizeof(uint32(0)))
 		texture.Update(nil, pixels, int(pitch))
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
+			case *sdl.MouseButtonEvent:
+				buttonEvent := event.(*sdl.MouseButtonEvent)
+				if buttonEvent.Button == sdl.BUTTON_LEFT {
+					switch buttonEvent.State {
+					case sdl.PRESSED:
+						leftButtonPressed = true
+					case sdl.RELEASED:
+						leftButtonPressed = false
+					}
+				}
+			case *sdl.MouseMotionEvent:
+				motionEvent := event.(*sdl.MouseMotionEvent)
+				if leftButtonPressed {
+					x := motionEvent.X
+					y := motionEvent.Y
+					position := y*width + x
+					pixels[position] = 0
+					pixels[position+1] = 0
+					pixels[position+2] = 0
+					pixels[position+3] = 0
+				}
 			case *sdl.QuitEvent:
 				running = false
 			}
